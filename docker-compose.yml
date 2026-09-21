@@ -1,0 +1,57 @@
+services:
+  # 1. ローカル LLM バックエンド (vLLM)
+  # 必要に応じて docker compose up vllm-backend で起動
+  vllm-backend:
+    image: vllm/vllm-openai:latest
+    container_name: vllm-backend
+    runtime: nvidia
+    environment:
+      - CUDA_VISIBLE_DEVICES=0
+    volumes:
+      - ~/.cache/huggingface:/root/.cache/huggingface
+    ports:
+      - "8000:8000"
+    command: >
+      --model Qwen/Qwen2.5-14B-Instruct-AWQ
+      --quantization awq
+      --dtype half
+      --gpu-memory-utilization 0.70
+      --max-model-len 4096
+      --port 8000
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    restart: unless-stopped
+
+  # 2. Logit-Router 統合型 自立進化プロキシ (flywheel-proxy)
+  flywheel-proxy:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: flywheel-proxy
+    depends_on:
+      - vllm-backend
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./data:/app/data
+      - ./models:/app/models
+    environment:
+      - ROUTER_TYPE=logit_router
+      - ROUTER_MODEL_ID=Qwen/Qwen2.5-1.5B-Instruct
+      - LOCAL_LLM_URL=http://vllm-backend:8000/v1
+      - LOCAL_LLM_MODEL=Qwen/Qwen2.5-14B-Instruct-AWQ
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    restart: unless-stopped
