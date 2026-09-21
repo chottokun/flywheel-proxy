@@ -93,3 +93,7 @@ logs/
 # OS files
 .DS_Store
 Thumbs.db
+
+# Agent configurations & Skills (Local only)
+.agents/
+AGENTS.md
