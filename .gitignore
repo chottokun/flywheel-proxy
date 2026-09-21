@@ -49,8 +49,19 @@ coverage.xml
 .pytest_cache/
 cover/
 
-# Environments
+# Environments & Sensitive files
 .env
+.env.*
+!.env.example
+*.key
+*.pem
+*.cert
+*.crt
+credentials.json
+token.json
+secrets/
+
+# Virtual environments
 .venv
 env/
 venv/
@@ -58,22 +69,27 @@ ENV/
 env.bak/
 venv.bak/
 
-# Local data & models
+# Local data & models & DBs
 data/
-models/*.onnx
-models/*.fb
-models/*.bin
-models/*.safetensors
+models/
 *.db
 *.db-wal
 *.db-shm
+*.sqlite
+*.sqlite3
+*.parquet
+*.jsonl
 
-# IDEs
+# Logs
+logs/
+*.log
+
+# IDEs & Editor configurations
 .vscode/
 .idea/
 *.swp
 *.swo
 
-# OS
+# OS files
 .DS_Store
 Thumbs.db
