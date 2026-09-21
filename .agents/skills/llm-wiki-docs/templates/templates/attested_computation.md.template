@@ -1,0 +1,41 @@
+---
+type: Attested Computation
+title: {{COMPUTATION_TITLE}}
+description: {{COMPUTATION_DESCRIPTION}}
+# resource: {{RESOURCE_URI}}
+status: stable
+runtime: {{RUNTIME}}  # 例: bigquery, postgres, dbt, python, Looker
+parameters:
+  - { name: {{PARAM_NAME}}, type: {{PARAM_TYPE}}, required: true }
+# computation: references/computations/{{COMPUTATION_FILE}}  # 外部ファイルの場合のみ設定
+executor:
+  resource: references/skills/{{EXECUTOR_FILE}}
+  receipt: [{{RECEIPT_FIELD_1}}, {{RECEIPT_FIELD_2}}, result]
+attester:
+  resource: references/attesters/{{ATTESTER_FILE}}
+generated:
+  by: {{ACTOR}}
+  at: {{TIMESTAMP_ISO8601}}
+# verified:
+#   - { by: human:{{REVIEWER_ID}}, at: {{TIMESTAMP_ISO8601}} }
+# stale_after: {{TIMESTAMP_ISO8601}}
+tags:
+  - {{TAG_1}}
+sources:
+  - id: {{SOURCE_ID}}
+    resource: {{SOURCE_RESOURCE}}
+    title: {{SOURCE_TITLE}}
+    # author: {{ACTOR}}
+    # last_modified: {{TIMESTAMP_ISO8601}}
+---
+
+# Computation
+
+{{インライン計算の場合、ここにフェンスコードブロックで計算を記述する。
+外部ファイルの場合（frontmatter に computation を設定済み）、このセクションは説明文のみとする。}}
+
+    {{SQL/コードをインデントブロックまたはフェンスコードブロックで記述}}
+
+{{計算に関する補足説明。}}[^{{SOURCE_ID}}]
+
+[^{{SOURCE_ID}}]: {{SOURCE_TITLE}}
