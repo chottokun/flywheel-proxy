@@ -48,17 +48,17 @@ async def lifespan(app: FastAPI):
 
     # Storage の初期化（モジュールが存在する場合）
     try:
-        from app.storage import TransactionStorage
+        from app.storage import Storage
 
-        transaction_storage = TransactionStorage(settings.DB_PATH)
-        await transaction_storage.initialize()
-    except ImportError:
-        pass
+        transaction_storage = Storage(db_path=settings.DB_PATH)
+        await transaction_storage.start()
+    except Exception as e:
+        logger.warning(f"Storage failed to start: {e}")
 
     yield
 
     if transaction_storage:
-        await transaction_storage.close()
+        await transaction_storage.stop()
     await http_client.aclose()
     shutdown_logging()
 
@@ -114,18 +114,17 @@ async def process_collected_chunks(
     )
 
     if transaction_storage:
-        record = {
-            "trace_id": trace_id,
-            "route": route,
-            "latency_ms": metrics.get("latency_ms", 0.0),
-            "entropy": metrics.get("entropy", 0.0),
-            "margin": metrics.get("margin", 0.0),
-            "escalated": metrics.get("escalated", False),
-            "finish_reason": finish_reason,
-            "messages": messages_payload,
-            "response_text": full_text,
-        }
-        await transaction_storage.log_transaction(record)
+        await transaction_storage.record(
+            trace_id=trace_id,
+            route=route,
+            latency_ms=metrics.get("latency_ms", 0.0),
+            entropy=metrics.get("entropy", 0.0),
+            margin=metrics.get("margin", 0.0),
+            escalated=bool(metrics.get("escalated", False)),
+            finish_reason=finish_reason,
+            messages_json=json.dumps(messages_payload, ensure_ascii=False),
+            response_text=full_text,
+        )
 
 
 async def stream_and_tee(
